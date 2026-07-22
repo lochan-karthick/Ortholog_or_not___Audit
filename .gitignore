@@ -9,3 +9,4 @@ __pycache__
 data/helixer_training_inputs_test/train/training_data.species_16.h5
 data/helixer_training_inputs_test/train/validation_data.species_91.h5
 data/schistosome_orthogroups/**/*.tsv
+dependency_audit.txt
