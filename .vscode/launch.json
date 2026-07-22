@@ -1,0 +1,115 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: filter_longest_transcripts.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "filter_longest_transcripts.py",
+            "console": "integratedTerminal",
+            "args": [
+                "/home/will/wbp_scratch/data/from_MARS/Schistosoma_mansoni_braker3_full.gff3",
+            ]
+        },
+        {
+            "name": "Python Debugger: schisto_orthogroup_pipeline_12.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "schisto_orthogroup_pipeline_12.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "data/from_MARS/OrthoFinder/Results_May21/",
+                // "--hog", "N0.HOG0004858",
+                "--do-plot",
+                "--load-blast",
+                "--global-ident", "infer",
+                // "--clade", "1"
+            ]
+        },
+        {
+            "name": "Python Debugger: schisto_orthogroup_pipeline_8.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "schisto_orthogroup_pipeline_8.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "data/from_MARS/OrthoFinder/Results_May10/",
+                "--hog", "N0.HOG0004858",
+                "--do-plot",
+                "--overwrite-plot",
+                "--load-blast",
+                "--global-ident", "infer",
+                // "--resume",
+                // "/home/will/wbp_scratch/data/schistosome_orthogroups/Results_May10/table_2024_07_11_13_59_00.tsv"
+                // "--clade", "1"
+            ]
+        },
+        {
+            "name": "Python Debugger: schisto_orthogroup_pipeline_8_LT.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "schisto_orthogroup_pipeline_8_LT.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "data/from_MARS/OrthoFinder/Phylogenetic_Hierarchical_Orthogroups/Results_Jul22/",
+                "--hog", "N0.HOG0007316",
+                "--do-plot",
+                "--overwrite-plot",
+                "--load-blast",
+                "--global-ident", "infer",
+                // "--resume", "/home/will/wbp_scratch/data/schistosome_orthogroups/Results_Jul22/table_2024_10_09_16_28_50.tsv"
+                // "--clade", "1"
+            ]
+        },
+        {
+            "name": "Python Debugger: find_biologically_interesting_genes.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "find_biologically_interesting_genes.py",
+            "console": "integratedTerminal",
+            "args": [
+                "data/from_MARS/pfamout_helixer_hq",
+                "-o", "test_output.txt",
+                "--odb", "exists",
+            ]
+        },
+        {
+            "name": "Python Debugger: prepare_helixer_training_inputs.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "prepare_helixer_training_inputs.py",
+            "console": "integratedTerminal",
+            "args": [
+                "data/helixer_training_species/training_set.txt",
+                "data/helixer_training_species/validation_set.txt",
+                "data/helixer_training_inputs_test/train"
+            ]
+        },
+        {
+            "name": "Python Debugger: parse_pdb.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "parse_pdb.py",
+            "console": "integratedTerminal",
+            "args": [
+                "test_pdb"
+            ],
+        },
+        {
+            "name": "Python Debugger: find_microexon_genes.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "find_microexon_genes.py",
+            "console": "integratedTerminal",
+            "args": [
+                "data/microexon_genes/"
+            ],
+        },
+    ]
+}
