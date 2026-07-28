@@ -14,3 +14,9 @@ file_dependency_audit.txt
 hardcoded_path_audit.txt
 __pycache__/
 *.pyc
+venv/
+db/*.db
+plots/
+data/from_MARS/
+data/schistosome_orthogroups/
+
