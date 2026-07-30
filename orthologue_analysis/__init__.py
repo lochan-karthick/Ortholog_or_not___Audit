@@ -20,7 +20,6 @@ class OrthologueAnalysisResumeError(Exception):
 #Function that runs the analysis and writes the results:
 def main(args, species_list):
     
-    
     df = init_orthogroup_df(args.hog_path)
     
     #A Single HOG is plotted automatically
@@ -107,7 +106,7 @@ def main(args, species_list):
                 og.process(row, plotter=plotter, **vars(args))
 
 #Function to validate the inputs and checks for the correct input format
-def validate_orthofinder_inputs(parser, args):
+def validate_inputs(parser, args):
 
     if not os.path.isdir(args.of_out_dir):
         parser.error(
@@ -139,6 +138,11 @@ def validate_orthofinder_inputs(parser, args):
             parser.error(
                 f"No BLAST files were found at: {blast_pattern}"
             )
+    
+    if not os.path.isdir(args.species_data_dir):
+        parser.error(
+            f"Species data directory does not exist: {args.species_data_dir}"
+        )
 
 
 #Function to parse arguments in the command line and prepare the paths:
@@ -159,7 +163,7 @@ def parse_args():
                         required="--global-ident" in sys.argv and sys.argv[sys.argv.index("--global-ident") + 1] == "infer")
     parser.add_argument('--global-ident', '-g', choices=[None, 'needle', 'infer'], default=None)
     parser.add_argument('--clade', type=int, default=None)
-    
+    parser.add_argument("--species-data-dir", required = True )
     
     args = parser.parse_args()
     args.results_label = os.path.basename(os.path.normpath(args.of_out_dir))
@@ -195,6 +199,6 @@ def parse_args():
             ""
         )
         
-    validate_orthofinder_inputs(parser, args)
+    validate_inputs(parser, args)
     
     return args
