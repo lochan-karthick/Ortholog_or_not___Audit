@@ -20,3 +20,4 @@ plots/
 data/from_MARS/
 data/schistosome_orthogroups/
 
+dependency_finder.py
