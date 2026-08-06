@@ -25,13 +25,20 @@ def init_orthogroup_df(og_path):
     return df.iloc[df.isnull().sum(1).sort_values(ascending=True).index]
 
 
-def format_output_table_path(results_label, hog=None, clade=None):
-    return f"""data/schistosome_orthogroups/{results_label}/table_{
+def format_output_table_path(output_dir, results_label, hog=None, clade=None):
+    filename = f"""table_{
         "_".join(filter(None, (
             datetime.now().strftime("%Y_%m_%d_%H_%M_%S"),
             str(hog) if hog else None,
             "clade" + str(clade) if clade else None
-    )))}.tsv"""
+        )))}.tsv"""
+
+    return os.path.join(
+        output_dir,
+        "tables",
+        results_label,
+        filename
+    )
 
 
 @dataclasses.dataclass

@@ -25,7 +25,7 @@ def main(args, species_list):
     #A Single HOG is plotted automatically
     do_plot = args.do_plot or bool(args.hog)
     
-    table_path = format_output_table_path(args.results_label, args.hog, args.clade)
+    table_path = format_output_table_path(args.output_dir, args.results_label, args.hog, args.clade)
     makedirs(table_path)
     
     table_cols = ["HOG", "selected_transcripts", "exon_counts", "protein_lengths", "gene_counts", "transcript_counts"]
@@ -36,9 +36,11 @@ def main(args, species_list):
         if args.global_ident:
             table_cols += ["align_pident"]
             
-    conf_dir = os.path.join("data", "configs", args.results_label, "")
-    plot_dir = os.path.join("plots", args.results_label, "")
-    tmp_dir = os.path.join("data", "tmp", args.results_label, "")
+    conf_dir = os.path.join(args.output_dir, "configs", args.results_label, "")
+
+    plot_dir = os.path.join(args.output_dir, "plots", args.results_label, "")
+
+    tmp_dir = os.path.join(args.output_dir, "tmp", args.results_label, "")
     
     if do_plot:
         makedirs([conf_dir, plot_dir, tmp_dir])
@@ -164,7 +166,7 @@ def parse_args():
     parser.add_argument('--global-ident', '-g', choices=[None, 'needle', 'infer'], default=None)
     parser.add_argument('--clade', type=int, default=None)
     parser.add_argument("--species-data-dir", required = True )
-    
+    parser.add_argument("--output-dir", required = True)
     args = parser.parse_args()
     args.results_label = os.path.basename(os.path.normpath(args.of_out_dir))
     
