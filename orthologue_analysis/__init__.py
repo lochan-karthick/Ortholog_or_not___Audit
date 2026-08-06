@@ -155,24 +155,27 @@ def validate_inputs(parser, args):
 #Function to parse arguments in the command line and prepare the paths:
 def parse_args():
     parser = argparse.ArgumentParser(
-        prog="analyse_schistosome_orthogroups.py",
-        description="visualise and gather stats for orthogroups from OrthoFinder output",
+        description="Audit orthogroup gene annotations and optionally generate comparative exon plots."
     )
     
     #Possible flags that can be used in the command line
-    parser.add_argument('of_out_dir')
+    parser.add_argument('of_out_dir', help="Path to the OrthoFinder results directory containing the HOG table.")
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('--hog', type=str, default=None)
-    group.add_argument('--resume', '-r', nargs='?', const='')
-    parser.add_argument('--do-plot', '-p', action='store_true')
-    parser.add_argument('--overwrite-plot', action='store_true')
-    parser.add_argument('--load-blast', '-l', action='store_true',
-                        required="--global-ident" in sys.argv and sys.argv[sys.argv.index("--global-ident") + 1] == "infer")
-    parser.add_argument('--global-ident', '-g', choices=[None, 'needle', 'infer'], default=None)
-    parser.add_argument('--clade', type=int, default=None)
-    parser.add_argument("--species-data-dir", required = True )
-    parser.add_argument("--output-dir", required = True)
+    group.add_argument('--hog', type=str, default=None, help="Process a single hierarchical orthogroup.")
+    group.add_argument('--resume', '-r', nargs='?', const='', help="Resume processing from a specified orthogroup.")
+    parser.add_argument('--do-plot', '-p', action='store_true', help="Generate an exon arrangement plot.")
+    parser.add_argument('--overwrite-plot', action='store_true', help="Replace an existing plot for the selected orthogroup.")
+    parser.add_argument('--load-blast', '-l', action='store_true', help="Load pairwise BLAST results for transcript comparison.")
+    parser.add_argument('--global-ident', '-g', choices=['needle', 'infer'], default=None,  help="Method used to assess global protein similarity: 'needle' performs alignment and 'infer' estimates it from BLAST.")
+    parser.add_argument('--clade', type=int, default=None, help="Restrict the analysis to a selected clade number.")
+    parser.add_argument("--species-data-dir", required = True, help="Directory containing the species annotation and protein files." )
+    parser.add_argument("--output-dir", required = True, help="Existing or new directory where tables, plots, configuration files and temporary files will be written.")
     args = parser.parse_args()
+    
+    # The inferred global identity calculation depends on BLAST results
+    if args.global_ident == "infer" and not args.load_blast:
+        parser.error("--global-ident infer requires --load-blast")
+        
     args.results_label = os.path.basename(os.path.normpath(args.of_out_dir))
     
     #The path supplied in the CLI points to the folder containing the N0.tsv file
