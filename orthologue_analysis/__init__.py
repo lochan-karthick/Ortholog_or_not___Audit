@@ -145,6 +145,11 @@ def validate_inputs(parser, args):
         parser.error(
             f"Species data directory does not exist: {args.species_data_dir}"
         )
+    
+    if os.path.exists(args.output_dir) and not os.path.isdir(args.output_dir):
+        parser.error(
+            f"Output path exists but is not a directory: {args.output_dir}"
+        )
 
 
 #Function to parse arguments in the command line and prepare the paths:

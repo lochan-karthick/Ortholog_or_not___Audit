@@ -16,15 +16,16 @@ import pygenometracks.tracksClass
 
 from utils.generic import flatten_list_to_list, flatten_list_to_set
 
+#Plot all transcript tracks against the same artificial chromosome label.
 CHROM_LABEL = "X"
 MAX_NEEDLE_SEQ_LEN = 200
 
-
+#Place the most complete orthogroup rows first.
 def init_orthogroup_df(og_path):
     df = pd.read_csv(og_path, delimiter="\t")
     return df.iloc[df.isnull().sum(1).sort_values(ascending=True).index]
 
-
+#Build a timestamped table name inside the user-selected output directory.
 def format_output_table_path(output_dir, results_label, hog=None, clade=None):
     filename = f"""table_{
         "_".join(filter(None, (
@@ -42,6 +43,7 @@ def format_output_table_path(output_dir, results_label, hog=None, clade=None):
 
 
 @dataclasses.dataclass
+#Collects counts while processing an orthogroup.
 class Counts:
     exon: dict
     gene: list
@@ -51,6 +53,7 @@ class Counts:
 
 
 class Plotter:
+    #Creates temp BED files and creates the exon-track plot.
     def __init__(self, do_plot, overwrite, path, conf_path, tmp_dir):
         self.do_plot = do_plot
         self.overwrite = overwrite
@@ -62,6 +65,7 @@ class Plotter:
         self.skip = False
 
     def plot_tracks(self):
+        #Saves the generated track config before plotting.
         with open(self.conf_path, "w") as ff:
             self.parser.write(ff)
         trp = pygenometracks.tracksClass.PlotTracks(self.conf_path, dpi=150, plot_regions=[(CHROM_LABEL, 0, self.max_end)])
@@ -75,6 +79,7 @@ class Plotter:
     def write_bed_for_single_transcript_exons(self, species, exons):
         with open(self.tmp_bed_file_path(species.prefix.lower()), "w") as f:
             for jdx, cds in enumerate(exons):
+                #Uses the first CDS as the coordinate origin for a transcript.
                 if jdx == 0:
                     offset = cds.end if cds.strand == "-" else cds.start
                     writer = csv.writer(f, delimiter="\t")
@@ -102,6 +107,7 @@ class Plotter:
         }
 
     def __enter__(self):
+        # Reuses existing plot files unless overwriting is requested.
         if self.do_plot:
             if os.path.exists(self.conf_path) and os.path.exists(self.path) and not self.overwrite:
                 print(f"{self.path} already exists.")
@@ -118,6 +124,7 @@ class Plotter:
 
 
 class OrthoGroup:
+    #Stores the analysis state and results for an orthogroup.
     def __init__(self, label, species_list, table_path, table_cols, seq_id_map):
         self.label = label
         self.species_list = species_list
@@ -139,33 +146,45 @@ class OrthoGroup:
         )
 
     def process(self, row, prefix_cut="", plotter=None, **kwargs):
+        #Loads the selected analysis options for given orthogroup.
         load_blast = kwargs.get("load_blast", False)
         global_ident = kwargs.get("global_ident")
         clade = kwargs.get("clade", None)
+        
+        #Selects one representative transcript for each available species.
         self.ingest_species_data(row, prefix_cut, load_blast, plotter)
         if global_ident:
             if global_ident == "needle":
                 self.find_transcript_with_worst_global_alignment(clade)
             elif global_ident == "infer":
                 self.find_transcript_with_worst_infered_global_alignment(clade)
+        #BLAST evidence provides an additional local-alignment check.
         if load_blast:
             self.find_transcripts_with_worst_blast(clade)
 
     def ingest_species_data(self, row, prefix_cut="", load_blast=False, plotter=None):
         for sp in self.species_list:
             prot_ids_string = row[sp.prot_meta.label]
+            
+            #Skip species that are absent from an orthogroup.
             if isinstance(prot_ids_string, float):
                 continue
             prot_ids = [p.strip() for p in prot_ids_string.split(",")]
+            
+            #Remove an optional source prefix before matching transcript IDs.
             if prefix_cut:
                 to_cut = [tid for tid in prot_ids if tid.startswith(prefix_cut)]
                 if to_cut:
                     to_leave = list(set(prot_ids).difference(to_cut))
                     prot_ids = list(map(lambda p: p.split(prefix_cut)[1], prot_ids)) + to_leave
+                    
+            #Record how many transcript and gene candidates were supplied.
             transcript_ids = set(prot_ids)
             gene_ids = set(p.split(".")[0] for p in prot_ids)
             self.counts.transcript.append(len(transcript_ids))
             self.counts.gene.append(len(gene_ids))
+            
+            #Gather transcripts from the other species to support representative selection.
             other_prots_labels = row.index.intersection([s.prot_meta.label for s in self.species_list if s.prot_meta.label != sp.prot_meta.label]).to_list()
             other_transcript_ids = flatten_list_to_set(list(map(str.strip, p.split(", "))) for p in row.filter(items=other_prots_labels).to_list())
             if prefix_cut:
@@ -175,25 +194,32 @@ class OrthoGroup:
                     other_transcript_ids = list(map(lambda p: p.split(prefix_cut)[1], to_cut)) + to_leave
                 else:
                     other_transcript_ids = list(other_transcript_ids)
+                    
+            # Selecting the best supported transcript and its exon structure.
             transcript, exons = sp.select_transcript(transcript_ids, other_transcript_ids, self.seq_id_map, load_blast)
             transcript_id = transcript.id.split(":")[1] if ":" in transcript.id else transcript.id
             self.selected_transcripts[sp] = transcript_id
             self.counts.clade_exons[sp.clade].append(len(exons))
             self.counts.prot_amino_acids[transcript_id] = sp.get_amino_acid_count(exons)
             self.counts.exon[transcript_id] = len(exons)
+            
+            #Keep only BLAST records relevant to the selected transcript.
             if load_blast:
                 self.filtered_blast = pd.concat([self.filtered_blast, sp.blast_slice[sp.blast_slice["transcript_id"]==self.seq_id_map[transcript_id]]])
+                
+            #Add this transcript to the plot if plotting is enabled.
             if plotter and not plotter.skip and not sp.skip_plot:
                 plotter.max_end = max(plotter.max_end, transcript.end - transcript.start)
                 plotter.write_bed_for_single_transcript_exons(sp, exons)
                 plotter.parser[f"test bed {sp.prefix}"] = plotter.bed_track_config(sp, transcript)
 
     def find_transcripts_with_worst_blast(self, clade=None):
+        #Reuse the globally identified pair if available, otherwise assume it from BLAST.
         if self.worst_pair:
             for sp, tid in self.selected_transcripts.items():
                 if tid in self.worst_pair:
                     worst_batch = sp.blast_slice[(sp.blast_slice["transcript_id"] == self.seq_id_map[tid]) &
-                                                 (sp.blast_slice["other_transcript_id"].isin(map(self.seq_id_map.get, self.worst_pair)))]
+                                                (sp.blast_slice["other_transcript_id"].isin(map(self.seq_id_map.get, self.worst_pair)))]
                     break
         else:
             if not clade:
@@ -248,6 +274,8 @@ class OrthoGroup:
         alignments = {}
         for pair in combinations(orthologue_seq_ids, 2):
             tr1, tr2 = pair[0], pair[1]
+            
+            #Estimating pairwise similarity from BLAST alignment coverage.
             blast = self.filtered_blast[(self.filtered_blast["transcript_id"]==self.seq_id_map[tr1]) &
                                     (self.filtered_blast["other_transcript_id"]==self.seq_id_map[tr2])]
             align_length = blast["length"].astype(int)
@@ -263,6 +291,8 @@ class OrthoGroup:
         self.align_pident = min_pident
 
     def extract_product(self, acc_product=None):
+        
+        #Collect InterPro accessions and, optionally, their descriptions.
         acc_list = []
         for sp, tid in self.selected_transcripts.items():
             info = sp.db["transcript:" + tid].attributes.get("info")
@@ -278,6 +308,8 @@ class OrthoGroup:
         return self
 
     def __exit__(self, *args, **kwargs):
+        
+        #Append one row once the orthogroup has been processed successfully.
         if self.selected_transcripts:
             data = {
                 "HOG": self.label,
