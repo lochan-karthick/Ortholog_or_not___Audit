@@ -5,6 +5,7 @@ import dataclasses
 from glob import glob
 import os.path
 import re
+import csv
 
 import dask.dataframe as dd
 from gffutils.exceptions import FeatureNotFoundError
@@ -168,6 +169,54 @@ class Species(ABC):
     def get_amino_acid_count(cds_exons):
         # ...or faster method by inferring from CDS lengths
         return int(sum(len(cds) for cds in cds_exons) / 3)
+    
+    
+#Describes species whose metadata is supplied through the species config file.
+class ConfiguredSpecies(Species):
+    
+    def __init__(
+        self,
+        name,
+        genus,
+        abbr,
+        clade,
+        data_dir,
+        data_label,
+        prot_filename_suffix=".fa",
+        skip_plot=False
+    ):
+        self._genus = genus
+        self._abbr = abbr
+        self.clade = int(clade)
+        self.data_dir = data_dir
+
+        super().__init__(
+            name,
+            data_label=data_label,
+            prot_filename_suffix=prot_filename_suffix,
+            skip_plot=skip_plot
+        )
+    @property
+    def genus(self):
+        return self._genus
+
+    @property
+    def abbr(self):
+        return self._abbr
+
+    @property
+    def gff_path(self):
+        return os.path.join(
+            self.data_dir,
+            f"{self.data_label}.gff3"
+        )
+
+    @property
+    def db_path(self):
+        return os.path.join(
+            self.db_dir,
+            f"{self.abbr}{self.name}.db"
+        )
 
 
 class Schistosoma(Species):
@@ -197,6 +246,63 @@ class JaponicumClade(Schistosoma):
 
 class JaponicumCladeFromTool(AltSourceMixin, JaponicumClade):
     pass
+
+def load_species_config(config_path, data_dir):
+    species = []
+
+    required_columns = {
+        "name",
+        "genus",
+        "abbr",
+        "clade",
+        "data_label",
+        "prot_filename_suffix",
+        "skip_plot"
+    }
+
+    with open(config_path, newline="") as config_file:
+        reader = csv.DictReader(config_file, delimiter="\t")
+
+        # Check whether all required columns are present in the config file
+        if not required_columns.issubset(reader.fieldnames):
+            missing = required_columns.difference(reader.fieldnames)
+            raise ValueError(
+                f"Species config is missing required columns: {', '.join(sorted(missing))}"
+            )
+
+        for row in reader:
+
+            # clade must be an integer
+            try:
+                clade = int(row["clade"])
+            except ValueError:
+                raise ValueError(
+                    f"clade must be an integer for species {row['name']}"
+                )
+
+            # skip_plot must be explicitly true or false
+            skip_plot = row["skip_plot"].lower()
+
+            if skip_plot not in {"true", "false"}:
+                raise ValueError(
+                    f"skip_plot must be 'true' or 'false' for species {row['name']}"
+                )
+
+            species.append(
+                ConfiguredSpecies(
+                    name=row["name"],
+                    genus=row["genus"],
+                    abbr=row["abbr"],
+                    clade=clade,
+                    data_dir=data_dir,
+                    data_label=row["data_label"],
+                    prot_filename_suffix=row["prot_filename_suffix"],
+                    skip_plot=skip_plot == "true"
+                )
+            )
+
+    return species
+
 
 
 class IndicumClade(Schistosoma):
