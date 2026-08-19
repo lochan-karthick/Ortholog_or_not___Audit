@@ -1,10 +1,10 @@
-name	genus	abbr	clade	data_label	prot_filename_suffix	skip_plot
-bovis	schistosoma	S	1	Sbov_LT	.fa	false
-curassoni	schistosoma	S	1	Scur_LT	.fa	false
-guineensis	schistosoma	S	1	Sgui_LT	.fa	false
-haematobium	schistosoma	S	1	Shae_LT	.fa	false
-intercalatum	schistosoma	S	1	Sint_LT	.fa	false
-rodhaini	schistosoma	S	2	Srod_LT	.fa	false
-mansoni	schistosoma	S	2	Sman_LT	.fa	false
-mansoni_braker3_reann	schistosoma	S	2	Sman_braker3_LT	.fa	true
-japonicum	schistosoma	S	3	Sjap_LT	.fa	false
+name	genus	abbr	clade	data_label	prot_filename_suffix	gff_id_prefix	skip_plot
+bovis	schistosoma	S	1	Sbov_LT	.fa	transcript:	false
+curassoni	schistosoma	S	1	Scur_LT	.fa	transcript:	false
+guineensis	schistosoma	S	1	Sgui_LT	.fa	transcript:	false
+haematobium	schistosoma	S	1	Shae_LT	.fa	transcript:	false
+intercalatum	schistosoma	S	1	Sint_LT	.fa	transcript:	false
+rodhaini	schistosoma	S	2	Srod_LT	.fa	transcript:	false
+mansoni	schistosoma	S	2	Sman_LT	.fa	transcript:	false
+mansoni_braker3_reann	schistosoma	S	2	Sman_braker3_LT	.fa		true
+japonicum	schistosoma	S	3	Sjap_LT	.fa	transcript:	false

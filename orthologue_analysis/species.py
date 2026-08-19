@@ -83,7 +83,17 @@ class Species(ABC):
     data_dir = os.path.join("data", "from_WBPS", "")
     db_dir = "db"
     release = WBPS_RELEASE
+    gff_id_prefix = "transcript:"
+    
+    def get_gff_transcript_id(self, tid):
+        if self.gff_id_prefix and tid.startswith(self.gff_id_prefix):
+            return tid
+
+        return self.gff_id_prefix + tid
+    
+    
     default_transcript_selection_method = "_get_longest_transcript"
+    
 
     def __init__(self, name, acc="", prot_filename_suffix=".protein.fa", data_label=None, skip_plot=False):
         self.name = name
@@ -135,19 +145,22 @@ class Species(ABC):
 
     def _get_transcript_with_most_exons(self, transcript_ids):
         exon_counts = {}
+        
         for tid in transcript_ids:
-            cds = list(self.db.children(tid if tid.startswith("transcript:") else "transcript:" + tid, featuretype="CDS"))
-            exon_counts[len(cds)] = {self.db[tid if tid.startswith("transcript:") else "transcript:" + tid]: cds}
+            gff_tid = self.get_gff_transcript_id(tid)
+            cds = list( self.db.children( gff_tid, featuretype="CDS"))
+            exon_counts[len(cds)] = { self.db[gff_tid]: cds }
         for tran, exons in exon_counts[max(exon_counts)].items():
-            return tran, sorted(exons, key=lambda x: x.start, reverse=tran.strand=="-")
+            return tran, sorted(exons, key=lambda x: x.start, reverse=tran.strand == "-")
 
     def _get_longest_transcript(self, transcript_ids):
         prot_lengths = {}
         for tid in transcript_ids:
-            cds = list(self.db.children(tid if tid.startswith("transcript:") else "transcript:" + tid, featuretype="CDS"))
-            prot_lengths[self.get_amino_acid_count(cds)] = {self.db[tid if tid.startswith("transcript:") else "transcript:" + tid]: cds}
+            gff_tid = self.get_gff_transcript_id(tid)
+            cds = list(self.db.children(gff_tid,featuretype="CDS"))
+            prot_lengths[self.get_amino_acid_count(cds)] = {self.db[gff_tid]: cds}
         for tran, exons in prot_lengths[max(prot_lengths)].items():
-            return tran, sorted(exons, key=lambda x: x.start, reverse=tran.strand=="-")
+            return tran, sorted( exons, key=lambda x: x.start, reverse=tran.strand == "-")    
 
     def _get_transcript_with_best_blast(self, transcript_ids, other_transcript_ids, seq_id_map):
         filt = self.blast_slice[(self.blast_slice["transcript_id"].isin(map(seq_id_map.get, transcript_ids))) &
@@ -156,8 +169,8 @@ class Species(ABC):
         try:
             tran = self.db[tid]
         except FeatureNotFoundError:
-            tran = self.db[tid if tid.startswith("transcript:") else "transcript:" + tid]
-        exons = list(self.db.children(tid if tid.startswith("transcript:") else "transcript:" + tid, featuretype="CDS"))
+            tran = self.db[self.get_gff_transcript_id(tid)]
+        exons = list(self.db.children(self.get_gff_transcript_id(tid) ,featuretype="CDS"))
         return tran, sorted(exons, key=lambda x: x.start, reverse=tran.strand=="-")
 
     def get_protein_sequence(self, tid):
@@ -183,13 +196,15 @@ class ConfiguredSpecies(Species):
         data_dir,
         data_label,
         prot_filename_suffix=".fa",
+        gff_id_prefix="",
         skip_plot=False
     ):
         self._genus = genus
         self._abbr = abbr
         self.clade = int(clade)
         self.data_dir = data_dir
-
+        self.gff_id_prefix = gff_id_prefix
+        
         super().__init__(
             name,
             data_label=data_label,
@@ -257,7 +272,9 @@ def load_species_config(config_path, data_dir):
         "clade",
         "data_label",
         "prot_filename_suffix",
-        "skip_plot"
+        "gff_id_prefix",
+        "skip_plot",
+        
     }
 
     with open(config_path, newline="") as config_file:
@@ -297,6 +314,7 @@ def load_species_config(config_path, data_dir):
                     data_dir=data_dir,
                     data_label=row["data_label"],
                     prot_filename_suffix=row["prot_filename_suffix"],
+                    gff_id_prefix=row["gff_id_prefix"],
                     skip_plot=skip_plot == "true"
                 )
             )
