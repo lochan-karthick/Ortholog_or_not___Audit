@@ -14,8 +14,7 @@ import pandas as pd
 from pygenometracks.tracks.BedTrack import DEFAULT_BED_COLOR
 import pygenometracks.tracksClass
 
-from utils.generic import flatten_list_to_list, flatten_list_to_set
-
+from utils.generic import flatten_list_to_list
 #Plot all transcript tracks against the same artificial chromosome label.
 CHROM_LABEL = "X"
 MAX_NEEDLE_SEQ_LEN = 200
@@ -145,14 +144,14 @@ class OrthoGroup:
             prot_amino_acids={}
         )
 
-    def process(self, row, prefix_cut="", plotter=None, **kwargs):
+    def process(self, row, plotter=None, **kwargs):
         #Loads the selected analysis options for given orthogroup.
         load_blast = kwargs.get("load_blast", False)
         global_ident = kwargs.get("global_ident")
         clade = kwargs.get("clade", None)
         
         #Selects one representative transcript for each available species.
-        self.ingest_species_data(row, prefix_cut, load_blast, plotter)
+        self.ingest_species_data(row, load_blast, plotter)
         if global_ident:
             if global_ident == "needle":
                 self.find_transcript_with_worst_global_alignment(clade)
@@ -162,21 +161,19 @@ class OrthoGroup:
         if load_blast:
             self.find_transcripts_with_worst_blast(clade)
 
-    def ingest_species_data(self, row, prefix_cut="", load_blast=False, plotter=None):
+    def ingest_species_data(self, row, load_blast=False, plotter=None):
         for sp in self.species_list:
             prot_ids_string = row[sp.prot_meta.label]
             
             #Skip species that are absent from an orthogroup.
             if isinstance(prot_ids_string, float):
                 continue
-            prot_ids = [p.strip() for p in prot_ids_string.split(",")]
+            prot_ids = [p.strip() 
+                for p in prot_ids_string.split(",")]
             
-            #Remove an optional source prefix before matching transcript IDs.
-            if prefix_cut:
-                to_cut = [tid for tid in prot_ids if tid.startswith(prefix_cut)]
-                if to_cut:
-                    to_leave = list(set(prot_ids).difference(to_cut))
-                    prot_ids = list(map(lambda p: p.split(prefix_cut)[1], prot_ids)) + to_leave
+            #Normalise HOG transcript IDs using this species' configured prefix
+            prot_ids = [sp.get_hog_transcript_id(tid) 
+                for tid in prot_ids]
                     
             #Record how many transcript and gene candidates were supplied.
             transcript_ids = set(prot_ids)
@@ -184,16 +181,24 @@ class OrthoGroup:
             self.counts.transcript.append(len(transcript_ids))
             self.counts.gene.append(len(gene_ids))
             
-            #Gather transcripts from the other species to support representative selection.
-            other_prots_labels = row.index.intersection([s.prot_meta.label for s in self.species_list if s.prot_meta.label != sp.prot_meta.label]).to_list()
-            other_transcript_ids = flatten_list_to_set(list(map(str.strip, p.split(", "))) for p in row.filter(items=other_prots_labels).to_list())
-            if prefix_cut:
-                to_cut = [tid for tid in other_transcript_ids if tid.startswith(prefix_cut)]
-                if to_cut:
-                    to_leave = list(other_transcript_ids.difference(to_cut))
-                    other_transcript_ids = list(map(lambda p: p.split(prefix_cut)[1], to_cut)) + to_leave
-                else:
-                    other_transcript_ids = list(other_transcript_ids)
+            #Gather and normalise transcript IDs from all the other species
+            other_transcript_ids = set()
+
+            for other_sp in self.species_list:
+                if other_sp.prot_meta.label == sp.prot_meta.label:
+                    continue
+
+                other_ids_string = row[other_sp.prot_meta.label]
+
+                #Skip species that are absent from this orthogroup
+                if isinstance(other_ids_string, float):
+                    continue
+
+                other_ids = [tid.strip()
+                    for tid in other_ids_string.split(",")]
+                
+                other_transcript_ids.update(other_sp.get_hog_transcript_id(tid)
+                    for tid in other_ids)
                     
             # Selecting the best supported transcript and its exon structure.
             transcript, exons = sp.select_transcript(transcript_ids, other_transcript_ids, self.seq_id_map, load_blast)

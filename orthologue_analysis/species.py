@@ -84,12 +84,19 @@ class Species(ABC):
     db_dir = "db"
     release = WBPS_RELEASE
     gff_id_prefix = "transcript:"
+    hog_id_prefix = "transcript_"
     
     def get_gff_transcript_id(self, tid):
         if self.gff_id_prefix and tid.startswith(self.gff_id_prefix):
             return tid
 
         return self.gff_id_prefix + tid
+    
+    def get_hog_transcript_id(self, tid):
+        if self.hog_id_prefix and tid.startswith(self.hog_id_prefix):
+            return tid[len(self.hog_id_prefix):]
+
+        return tid
     
     
     default_transcript_selection_method = "_get_longest_transcript"
@@ -197,6 +204,7 @@ class ConfiguredSpecies(Species):
         data_label,
         prot_filename_suffix=".fa",
         gff_id_prefix="",
+        hog_id_prefix="",
         skip_plot=False
     ):
         self._genus = genus
@@ -204,6 +212,7 @@ class ConfiguredSpecies(Species):
         self.clade = int(clade)
         self.data_dir = data_dir
         self.gff_id_prefix = gff_id_prefix
+        self.hog_id_prefix = hog_id_prefix
         
         super().__init__(
             name,
@@ -273,6 +282,7 @@ def load_species_config(config_path, data_dir):
         "data_label",
         "prot_filename_suffix",
         "gff_id_prefix",
+        "hog_id_prefix",
         "skip_plot",
         
     }
@@ -315,6 +325,7 @@ def load_species_config(config_path, data_dir):
                     data_label=row["data_label"],
                     prot_filename_suffix=row["prot_filename_suffix"],
                     gff_id_prefix=row["gff_id_prefix"],
+                    hog_id_prefix=row["hog_id_prefix"],
                     skip_plot=skip_plot == "true"
                 )
             )
