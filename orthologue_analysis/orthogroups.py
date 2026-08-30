@@ -202,7 +202,7 @@ class OrthoGroup:
                     
             # Selecting the best supported transcript and its exon structure.
             transcript, exons = sp.select_transcript(transcript_ids, other_transcript_ids, self.seq_id_map, load_blast)
-            transcript_id = transcript.id.split(":")[1] if ":" in transcript.id else transcript.id
+            transcript_id = sp.get_internal_transcript_id(transcript.id)
             self.selected_transcripts[sp] = transcript_id
             self.counts.clade_exons[sp.clade].append(len(exons))
             self.counts.prot_amino_acids[transcript_id] = sp.get_amino_acid_count(exons)

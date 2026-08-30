@@ -93,6 +93,12 @@ class Species(ABC):
 
         return self.gff_id_prefix + tid
     
+    def get_internal_transcript_id(self, tid):
+        if self.gff_id_prefix and tid.startswith(self.gff_id_prefix):
+            return tid[len(self.gff_id_prefix):]
+
+        return tid
+    
     def get_hog_transcript_id(self, tid):
         if self.hog_id_prefix and tid.startswith(self.hog_id_prefix):
             return tid[len(self.hog_id_prefix):]
