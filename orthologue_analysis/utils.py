@@ -4,24 +4,44 @@ from utils.generic import get_project_root
 
 
 class SequenceIDMapping:
-    def __init__(self, wd_path):
+    def __init__(self, wd_path, species_list):
         self.map = {}
+        self.inv_map = {}
+
+        #Match each OrthoFinder species ID to its Species object
+        species_by_id = {
+            str(sp.id): sp
+            for sp in species_list
+        }
+
         with open(os.path.join(wd_path, "SequenceIDs.txt"), "r") as f:
             for l in f:
                 sid, info = l.strip().split(": ")
                 tid = info.split(" ")[0]
+
+                #OrthoFinder IDs are formatted as speciesID_sequenceID, for example 6_9762.
+                species_id = sid.split("_", 1)[0]
+
+                #Ignore species that are not part of this analysis
+                sp = species_by_id.get(species_id)
+
+                if sp is None:
+                    continue
+
+                #Convert the SequenceIDs.txt transcript ID into the pipeline's standard internal transcript ID.
+                
+                tid = sp.get_sequence_transcript_id(tid)
+
                 self.map[tid] = sid
-        self.inv_map = {v: k for k, v in self.map.items()}
+                self.inv_map[sid] = tid
 
     def __getitem__(self, item):
-        if str(item)[0].isnumeric():
+        item = str(item)
+
+        if item in self.inv_map:
             return self.inv_map[item]
-        prefixes = ["", "transcript:", "transcript_"]
-        while True:
-            try:
-                return self.map[prefixes[0] + item]
-            except KeyError:
-                prefixes.pop(0)
+
+        return self.map[item]
 
     def get(self, item):
         return self[item]

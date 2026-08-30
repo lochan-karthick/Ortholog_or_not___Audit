@@ -85,6 +85,7 @@ class Species(ABC):
     release = WBPS_RELEASE
     gff_id_prefix = "transcript:"
     hog_id_prefix = "transcript_"
+    sequence_id_prefix = "transcript:"
     
     def get_gff_transcript_id(self, tid):
         if self.gff_id_prefix and tid.startswith(self.gff_id_prefix):
@@ -95,6 +96,12 @@ class Species(ABC):
     def get_hog_transcript_id(self, tid):
         if self.hog_id_prefix and tid.startswith(self.hog_id_prefix):
             return tid[len(self.hog_id_prefix):]
+
+        return tid
+    
+    def get_sequence_transcript_id(self, tid):
+        if self.sequence_id_prefix and tid.startswith(self.sequence_id_prefix):
+            return tid[len(self.sequence_id_prefix):]
 
         return tid
     
@@ -205,6 +212,7 @@ class ConfiguredSpecies(Species):
         prot_filename_suffix=".fa",
         gff_id_prefix="",
         hog_id_prefix="",
+        sequence_id_prefix="",
         skip_plot=False
     ):
         self._genus = genus
@@ -213,6 +221,7 @@ class ConfiguredSpecies(Species):
         self.data_dir = data_dir
         self.gff_id_prefix = gff_id_prefix
         self.hog_id_prefix = hog_id_prefix
+        self.sequence_id_prefix = sequence_id_prefix
         
         super().__init__(
             name,
@@ -283,6 +292,7 @@ def load_species_config(config_path, data_dir):
         "prot_filename_suffix",
         "gff_id_prefix",
         "hog_id_prefix",
+        "sequence_id_prefix",
         "skip_plot",
         
     }
@@ -290,7 +300,7 @@ def load_species_config(config_path, data_dir):
     with open(config_path, newline="") as config_file:
         reader = csv.DictReader(config_file, delimiter="\t")
 
-        # Check whether all required columns are present in the config file
+        #Check whether all required columns are present in the config file
         if not required_columns.issubset(reader.fieldnames):
             missing = required_columns.difference(reader.fieldnames)
             raise ValueError(
@@ -299,7 +309,7 @@ def load_species_config(config_path, data_dir):
 
         for row in reader:
 
-            # clade must be an integer
+            #clade must be an integer
             try:
                 clade = int(row["clade"])
             except ValueError:
@@ -307,7 +317,7 @@ def load_species_config(config_path, data_dir):
                     f"clade must be an integer for species {row['name']}"
                 )
 
-            # skip_plot must be explicitly true or false
+            #skip_plot must be explicitly true or false
             skip_plot = row["skip_plot"].lower()
 
             if skip_plot not in {"true", "false"}:
@@ -326,6 +336,7 @@ def load_species_config(config_path, data_dir):
                     prot_filename_suffix=row["prot_filename_suffix"],
                     gff_id_prefix=row["gff_id_prefix"],
                     hog_id_prefix=row["hog_id_prefix"],
+                    sequence_id_prefix=row["sequence_id_prefix"],
                     skip_plot=skip_plot == "true"
                 )
             )

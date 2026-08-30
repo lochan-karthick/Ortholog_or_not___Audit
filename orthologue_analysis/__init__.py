@@ -103,7 +103,7 @@ def main(args, species_list):
                 species_list=species_list,
                 table_path=table_path,
                 table_cols=table_cols,
-                seq_id_map=SequenceIDMapping(args.wd_path)
+                seq_id_map=SequenceIDMapping(args.wd_path, species_list)
             ) as og:
                 og.process(row, plotter=plotter, **vars(args))
 
