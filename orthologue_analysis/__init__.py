@@ -174,7 +174,7 @@ def parse_args():
     parser.add_argument('--clade', type=int, default=None, help="Restrict the analysis to a selected clade number.")
     parser.add_argument("--species-data-dir", required = True, help="Directory containing the species annotation and protein files." )
     parser.add_argument("--output-dir", required = True, help="Existing or new directory where tables, plots, configuration files and temporary files will be written.")
-    parser.add_argument("--species-config", required = True, help = "TSV file describing the species for the analysis")
+    parser.add_argument("--species-config", required = True, help = "YAML file describing the species for the analysis")
     args = parser.parse_args()
     
     # The inferred global identity calculation depends on BLAST results

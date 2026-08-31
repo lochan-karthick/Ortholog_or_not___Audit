@@ -5,7 +5,7 @@ import dataclasses
 from glob import glob
 import os.path
 import re
-import csv
+import yaml
 
 import dask.dataframe as dd
 from gffutils.exceptions import FeatureNotFoundError
@@ -307,66 +307,91 @@ class JaponicumCladeFromTool(AltSourceMixin, JaponicumClade):
 def load_species_config(config_path, data_dir):
     species = []
 
-    required_columns = {
+    with open(config_path, "r") as config_file:
+        config = yaml.safe_load(config_file)
+
+    if not isinstance(config, dict) or "species" not in config:
+        raise ValueError(
+            "Species config must contain a top-level 'species' list"
+        )
+
+    if not isinstance(config["species"], list):
+        raise ValueError(
+            "'species' must be a list"
+        )
+
+    required_fields = {
         "name",
         "genus",
         "abbr",
         "clade",
         "data_label",
         "prot_filename_suffix",
-        "gff_id_prefix",
-        "hog_id_prefix",
-        "sequence_id_prefix",
-        "skip_plot",
-        
+        "id_prefixes",
+        "skip_plot"
     }
 
-    with open(config_path, newline="") as config_file:
-        reader = csv.DictReader(config_file, delimiter="\t")
+    required_prefixes = {
+        "hog",
+        "sequence",
+        "gff"
+    }
 
-        #Check whether all required columns are present in the config file
-        if not required_columns.issubset(reader.fieldnames):
-            missing = required_columns.difference(reader.fieldnames)
+    for entry in config["species"]:
+        missing = required_fields.difference(entry)
+
+        if missing:
             raise ValueError(
-                f"Species config is missing required columns: {', '.join(sorted(missing))}"
+                "Species config entry is missing required fields: "
+                + ", ".join(sorted(missing))
             )
 
-        for row in reader:
+        prefixes = entry["id_prefixes"]
 
-            #clade must be an integer
-            try:
-                clade = int(row["clade"])
-            except ValueError:
-                raise ValueError(
-                    f"clade must be an integer for species {row['name']}"
-                )
-
-            #skip_plot must be explicitly true or false
-            skip_plot = row["skip_plot"].lower()
-
-            if skip_plot not in {"true", "false"}:
-                raise ValueError(
-                    f"skip_plot must be 'true' or 'false' for species {row['name']}"
-                )
-
-            species.append(
-                ConfiguredSpecies(
-                    name=row["name"],
-                    genus=row["genus"],
-                    abbr=row["abbr"],
-                    clade=clade,
-                    data_dir=data_dir,
-                    data_label=row["data_label"],
-                    prot_filename_suffix=row["prot_filename_suffix"],
-                    gff_id_prefix=row["gff_id_prefix"],
-                    hog_id_prefix=row["hog_id_prefix"],
-                    sequence_id_prefix=row["sequence_id_prefix"],
-                    skip_plot=skip_plot == "true"
-                )
+        if not isinstance(prefixes, dict):
+            raise ValueError(
+                f"id_prefixes must be a mapping for species {entry['name']}"
             )
+
+        missing_prefixes = required_prefixes.difference(prefixes)
+
+        if missing_prefixes:
+            raise ValueError(
+                f"Species {entry['name']} is missing ID prefixes: "
+                + ", ".join(sorted(missing_prefixes))
+            )
+
+        try:
+            clade = int(entry["clade"])
+        except (TypeError, ValueError):
+            raise ValueError(
+                f"clade must be an integer for species {entry['name']}"
+            )
+
+        skip_plot = entry["skip_plot"]
+
+        if not isinstance(skip_plot, bool):
+            raise ValueError(
+                f"skip_plot must be true or false for species {entry['name']}"
+            )
+
+        species.append(
+            ConfiguredSpecies(
+                name=entry["name"],
+                genus=entry["genus"],
+                abbr=entry["abbr"],
+                clade=clade,
+                data_dir=data_dir,
+                data_label=entry["data_label"],
+                prot_filename_suffix=entry["prot_filename_suffix"],
+                hog_id_prefix=prefixes["hog"],
+                sequence_id_prefix=prefixes["sequence"],
+                gff_id_prefix=prefixes["gff"],
+                skip_plot=skip_plot
+            )
+        )
 
     return species
-
 
 
 class IndicumClade(Schistosoma):

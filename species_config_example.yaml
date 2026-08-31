@@ -1,0 +1,108 @@
+species:
+  - name: bovis
+    genus: schistosoma
+    abbr: S
+    clade: 1
+    data_label: Sbov_LT
+    prot_filename_suffix: ".fa"
+    id_prefixes:
+      hog: "transcript_"
+      sequence: "transcript:"
+      gff: "transcript:"
+    skip_plot: false
+
+  - name: curassoni
+    genus: schistosoma
+    abbr: S
+    clade: 1
+    data_label: Scur_LT
+    prot_filename_suffix: ".fa"
+    id_prefixes:
+      hog: "transcript_"
+      sequence: "transcript:"
+      gff: "transcript:"
+    skip_plot: false
+
+  - name: guineensis
+    genus: schistosoma
+    abbr: S
+    clade: 1
+    data_label: Sgui_LT
+    prot_filename_suffix: ".fa"
+    id_prefixes:
+      hog: "transcript_"
+      sequence: "transcript:"
+      gff: "transcript:"
+    skip_plot: false
+
+  - name: haematobium
+    genus: schistosoma
+    abbr: S
+    clade: 1
+    data_label: Shae_LT
+    prot_filename_suffix: ".fa"
+    id_prefixes:
+      hog: "transcript_"
+      sequence: "transcript:"
+      gff: "transcript:"
+    skip_plot: false
+
+  - name: intercalatum
+    genus: schistosoma
+    abbr: S
+    clade: 1
+    data_label: Sint_LT
+    prot_filename_suffix: ".fa"
+    id_prefixes:
+      hog: "transcript_"
+      sequence: "transcript:"
+      gff: "transcript:"
+    skip_plot: false
+
+  - name: rodhaini
+    genus: schistosoma
+    abbr: S
+    clade: 2
+    data_label: Srod_LT
+    prot_filename_suffix: ".fa"
+    id_prefixes:
+      hog: "transcript_"
+      sequence: "transcript:"
+      gff: "transcript:"
+    skip_plot: false
+
+  - name: mansoni
+    genus: schistosoma
+    abbr: S
+    clade: 2
+    data_label: Sman_LT
+    prot_filename_suffix: ".fa"
+    id_prefixes:
+      hog: "transcript_"
+      sequence: "transcript:"
+      gff: "transcript:"
+    skip_plot: false
+
+  - name: mansoni_braker3_reann
+    genus: schistosoma
+    abbr: S
+    clade: 2
+    data_label: Sman_braker3_LT
+    prot_filename_suffix: ".fa"
+    id_prefixes:
+      hog: ""
+      sequence: ""
+      gff: ""
+    skip_plot: true
+
+  - name: japonicum
+    genus: schistosoma
+    abbr: S
+    clade: 3
+    data_label: Sjap_LT
+    prot_filename_suffix: ".fa"
+    id_prefixes:
+      hog: "transcript_"
+      sequence: "transcript:"
+      gff: "transcript:"
+    skip_plot: false
