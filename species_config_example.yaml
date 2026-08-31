@@ -5,10 +5,15 @@ species:
     clade: 1
     data_label: Sbov_LT
     prot_filename_suffix: ".fa"
+
+    files:
+      gff: Sbov_LT.gff3
+
     id_prefixes:
       hog: "transcript_"
       sequence: "transcript:"
       gff: "transcript:"
+
     skip_plot: false
 
   - name: curassoni
@@ -17,10 +22,15 @@ species:
     clade: 1
     data_label: Scur_LT
     prot_filename_suffix: ".fa"
+
+    files:
+      gff: Scur_LT.gff3
+
     id_prefixes:
       hog: "transcript_"
       sequence: "transcript:"
       gff: "transcript:"
+
     skip_plot: false
 
   - name: guineensis
@@ -29,10 +39,15 @@ species:
     clade: 1
     data_label: Sgui_LT
     prot_filename_suffix: ".fa"
+
+    files:
+      gff: Sgui_LT.gff3
+
     id_prefixes:
       hog: "transcript_"
       sequence: "transcript:"
       gff: "transcript:"
+
     skip_plot: false
 
   - name: haematobium
@@ -41,10 +56,15 @@ species:
     clade: 1
     data_label: Shae_LT
     prot_filename_suffix: ".fa"
+
+    files:
+      gff: Shae_LT.gff3
+
     id_prefixes:
       hog: "transcript_"
       sequence: "transcript:"
       gff: "transcript:"
+
     skip_plot: false
 
   - name: intercalatum
@@ -53,10 +73,15 @@ species:
     clade: 1
     data_label: Sint_LT
     prot_filename_suffix: ".fa"
+
+    files:
+      gff: Sint_LT.gff3
+
     id_prefixes:
       hog: "transcript_"
       sequence: "transcript:"
       gff: "transcript:"
+
     skip_plot: false
 
   - name: rodhaini
@@ -65,10 +90,15 @@ species:
     clade: 2
     data_label: Srod_LT
     prot_filename_suffix: ".fa"
+
+    files:
+      gff: Srod_LT.gff3
+
     id_prefixes:
       hog: "transcript_"
       sequence: "transcript:"
       gff: "transcript:"
+
     skip_plot: false
 
   - name: mansoni
@@ -77,10 +107,15 @@ species:
     clade: 2
     data_label: Sman_LT
     prot_filename_suffix: ".fa"
+
+    files:
+      gff: Sman_LT.gff3
+
     id_prefixes:
       hog: "transcript_"
       sequence: "transcript:"
       gff: "transcript:"
+
     skip_plot: false
 
   - name: mansoni_braker3_reann
@@ -89,10 +124,15 @@ species:
     clade: 2
     data_label: Sman_braker3_LT
     prot_filename_suffix: ".fa"
+
+    files:
+      gff: Sman_braker3_LT.gff3
+
     id_prefixes:
       hog: ""
       sequence: ""
       gff: ""
+
     skip_plot: true
 
   - name: japonicum
@@ -101,8 +141,13 @@ species:
     clade: 3
     data_label: Sjap_LT
     prot_filename_suffix: ".fa"
+
+    files:
+      gff: Sjap_LT.gff3
+
     id_prefixes:
       hog: "transcript_"
       sequence: "transcript:"
       gff: "transcript:"
+
     skip_plot: false

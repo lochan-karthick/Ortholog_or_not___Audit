@@ -233,6 +233,7 @@ class ConfiguredSpecies(Species):
         clade,
         data_dir,
         data_label,
+        gff_filename,
         prot_filename_suffix=".fa",
         gff_id_prefix="",
         hog_id_prefix="",
@@ -243,6 +244,7 @@ class ConfiguredSpecies(Species):
         self._abbr = abbr
         self.clade = int(clade)
         self.data_dir = data_dir
+        self.gff_filename = gff_filename
         self.gff_id_prefix = gff_id_prefix
         self.hog_id_prefix = hog_id_prefix
         self.sequence_id_prefix = sequence_id_prefix
@@ -265,8 +267,8 @@ class ConfiguredSpecies(Species):
     def gff_path(self):
         return os.path.join(
             self.data_dir,
-            f"{self.data_label}.gff3"
-        )
+            self.gff_filename
+    )
 
     @property
     def db_path(self):
@@ -327,6 +329,7 @@ def load_species_config(config_path, data_dir):
         "clade",
         "data_label",
         "prot_filename_suffix",
+        "files",
         "id_prefixes",
         "skip_plot"
     }
@@ -344,6 +347,18 @@ def load_species_config(config_path, data_dir):
             raise ValueError(
                 "Species config entry is missing required fields: "
                 + ", ".join(sorted(missing))
+            )
+            
+        files = entry["files"]
+
+        if not isinstance(files, dict):
+            raise ValueError(
+                f"files must be a mapping for species {entry['name']}"
+            )
+
+        if "gff" not in files:
+            raise ValueError(
+                f"Species {entry['name']} is missing GFF file information"
             )
 
         prefixes = entry["id_prefixes"]
@@ -383,6 +398,7 @@ def load_species_config(config_path, data_dir):
                 clade=clade,
                 data_dir=data_dir,
                 data_label=entry["data_label"],
+                gff_filename=files["gff"],
                 prot_filename_suffix=entry["prot_filename_suffix"],
                 hog_id_prefix=prefixes["hog"],
                 sequence_id_prefix=prefixes["sequence"],
