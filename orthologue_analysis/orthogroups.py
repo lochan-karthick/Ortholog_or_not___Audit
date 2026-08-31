@@ -177,7 +177,10 @@ class OrthoGroup:
                     
             #Record how many transcript and gene candidates were supplied.
             transcript_ids = set(prot_ids)
-            gene_ids = set(p.split(".")[0] for p in prot_ids)
+            gene_ids = set()
+
+            for tid in transcript_ids:
+                gene_ids.update(sp.get_gene_ids(tid))
             self.counts.transcript.append(len(transcript_ids))
             self.counts.gene.append(len(gene_ids))
             

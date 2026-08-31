@@ -111,6 +111,24 @@ class Species(ABC):
 
         return tid
     
+    def get_gene_ids(self, tid):
+        gff_tid = self.get_gff_transcript_id(tid)
+
+        gene_ids = {
+            parent.id
+            for parent in self.db.parents(
+                gff_tid,
+                featuretype="gene"
+            )
+        }
+
+        if not gene_ids:
+            raise ValueError(
+                f"No gene parent found for transcript {gff_tid}"
+            )
+
+        return gene_ids
+    
     
     default_transcript_selection_method = "_get_longest_transcript"
     
