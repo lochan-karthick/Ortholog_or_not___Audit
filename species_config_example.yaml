@@ -4,10 +4,10 @@ species:
     abbr: S
     clade: 1
     data_label: Sbov_LT
-    prot_filename_suffix: ".fa"
 
     files:
       gff: Sbov_LT.gff3
+      protein: Sbov_LT.fa
 
     id_prefixes:
       hog: "transcript_"
@@ -21,10 +21,10 @@ species:
     abbr: S
     clade: 1
     data_label: Scur_LT
-    prot_filename_suffix: ".fa"
 
     files:
       gff: Scur_LT.gff3
+      protein: Scur_LT.fa
 
     id_prefixes:
       hog: "transcript_"
@@ -38,10 +38,10 @@ species:
     abbr: S
     clade: 1
     data_label: Sgui_LT
-    prot_filename_suffix: ".fa"
 
     files:
       gff: Sgui_LT.gff3
+      protein: Sgui_LT.fa
 
     id_prefixes:
       hog: "transcript_"
@@ -55,10 +55,10 @@ species:
     abbr: S
     clade: 1
     data_label: Shae_LT
-    prot_filename_suffix: ".fa"
 
     files:
       gff: Shae_LT.gff3
+      protein: Shae_LT.fa
 
     id_prefixes:
       hog: "transcript_"
@@ -72,10 +72,10 @@ species:
     abbr: S
     clade: 1
     data_label: Sint_LT
-    prot_filename_suffix: ".fa"
 
     files:
       gff: Sint_LT.gff3
+      protein: Sint_LT.fa
 
     id_prefixes:
       hog: "transcript_"
@@ -89,10 +89,10 @@ species:
     abbr: S
     clade: 2
     data_label: Srod_LT
-    prot_filename_suffix: ".fa"
 
     files:
       gff: Srod_LT.gff3
+      protein: Srod_LT.fa
 
     id_prefixes:
       hog: "transcript_"
@@ -106,10 +106,10 @@ species:
     abbr: S
     clade: 2
     data_label: Sman_LT
-    prot_filename_suffix: ".fa"
 
     files:
       gff: Sman_LT.gff3
+      protein: Sman_LT.fa
 
     id_prefixes:
       hog: "transcript_"
@@ -123,10 +123,10 @@ species:
     abbr: S
     clade: 2
     data_label: Sman_braker3_LT
-    prot_filename_suffix: ".fa"
 
     files:
       gff: Sman_braker3_LT.gff3
+      protein: Sman_braker3_LT.fa
 
     id_prefixes:
       hog: ""
@@ -140,10 +140,10 @@ species:
     abbr: S
     clade: 3
     data_label: Sjap_LT
-    prot_filename_suffix: ".fa"
 
     files:
       gff: Sjap_LT.gff3
+      protein: Sjap_LT.fa
 
     id_prefixes:
       hog: "transcript_"

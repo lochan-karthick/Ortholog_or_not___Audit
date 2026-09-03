@@ -25,8 +25,9 @@ class SpeciesList(UserList):
         wd_path = kwargs["wd_path"]
         load_blast = kwargs.get("load_blast", False)
         self.data = []
+        species_id_map = SpeciesIDMapping(wd_path)
         for sp in initlist:
-            sp.id = SpeciesIDMapping(wd_path, sp.prot_meta.filename_suffix)[sp.data_label]
+            sp.id = species_id_map[sp.prot_meta.file_path]
             seen_pairs = []
             blast_paths = []
             for bp in natsorted(glob(os.path.join(wd_path, "Blast*"))):
@@ -57,7 +58,6 @@ class SpeciesList(UserList):
 @dataclasses.dataclass
 class ProteinMeta:
     file_path: str
-    filename_suffix: str
     label: str
 
 
@@ -133,16 +133,44 @@ class Species(ABC):
     default_transcript_selection_method = "_get_longest_transcript"
     
 
-    def __init__(self, name, acc="", prot_filename_suffix=".protein.fa", data_label=None, skip_plot=False):
+    def __init__(
+        self,
+        name,
+        acc="",
+        prot_filename_suffix=".protein.fa",
+        data_label=None,
+        protein_filename=None,
+        skip_plot=False
+    ):
         self.name = name
         self.prefix = self.abbr + self.name.lower()[:3]
-        self.data_label = f"{self.genus}_{self.name}.{acc}.{self.release}" if not data_label else data_label
+        self.data_label = (
+            f"{self.genus}_{self.name}.{acc}.{self.release}"
+            if not data_label
+            else data_label
+        )
+
         self.db = init_db(self.gff_path, self.db_path)
         self.blast_slice = None
+
+        # Legacy species construct their protein filename from the
+        # data label and suffix. Configured species provide the exact
+        # protein filename through the YAML config.
+        if protein_filename is None:
+            protein_filename = self.data_label + prot_filename_suffix
+
+            protein_label = self.data_label + ".".join(
+                prot_filename_suffix.split(".")[:-1]
+            )
+        else:
+            protein_label = self.data_label
+
         self.prot_meta = ProteinMeta(
-            file_path=os.path.join(self.data_dir, self.data_label + prot_filename_suffix),
-            filename_suffix=prot_filename_suffix,
-            label=self.data_label + ".".join(prot_filename_suffix.split(".")[:-1])
+            file_path=os.path.join(
+                self.data_dir,
+                protein_filename
+            ),
+            label=protein_label
         )
         self.all_transcript_ids = [line.strip(">").strip("transcript:").split(" ")[0] for line in open(self.prot_meta.file_path) if line.startswith(">")]
         self.skip_plot = skip_plot
@@ -234,7 +262,7 @@ class ConfiguredSpecies(Species):
         data_dir,
         data_label,
         gff_filename,
-        prot_filename_suffix=".fa",
+        protein_filename,
         gff_id_prefix="",
         hog_id_prefix="",
         sequence_id_prefix="",
@@ -252,7 +280,7 @@ class ConfiguredSpecies(Species):
         super().__init__(
             name,
             data_label=data_label,
-            prot_filename_suffix=prot_filename_suffix,
+            protein_filename=protein_filename,
             skip_plot=skip_plot
         )
     @property
@@ -328,7 +356,6 @@ def load_species_config(config_path, data_dir):
         "abbr",
         "clade",
         "data_label",
-        "prot_filename_suffix",
         "files",
         "id_prefixes",
         "skip_plot"
@@ -356,9 +383,14 @@ def load_species_config(config_path, data_dir):
                 f"files must be a mapping for species {entry['name']}"
             )
 
-        if "gff" not in files:
+        required_files = {"gff","protein"}
+        
+        missing_files = required_files.difference(files)
+        
+        if missing_files:
             raise ValueError(
-                f"Species {entry['name']} is missing GFF file information"
+                f"Species {entry['name']} is missing file information: "
+                + ", ".join(sorted(missing_files))
             )
 
         prefixes = entry["id_prefixes"]
@@ -399,7 +431,7 @@ def load_species_config(config_path, data_dir):
                 data_dir=data_dir,
                 data_label=entry["data_label"],
                 gff_filename=files["gff"],
-                prot_filename_suffix=entry["prot_filename_suffix"],
+                protein_filename=files["protein"],
                 hog_id_prefix=prefixes["hog"],
                 sequence_id_prefix=prefixes["sequence"],
                 gff_id_prefix=prefixes["gff"],

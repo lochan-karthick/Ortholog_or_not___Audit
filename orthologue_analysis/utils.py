@@ -48,16 +48,19 @@ class SequenceIDMapping:
 
 
 class SpeciesIDMapping:
-    def __init__(self, wd_path, ext):
+    def __init__(self, wd_path):
         self.map = {}
+
         with open(os.path.join(wd_path, "SpeciesIDs.txt"), "r") as f:
             for l in f:
                 sid, prot_path = l.strip().split(": ")
-                data_label = prot_path.split(ext)[0]
-                self.map[data_label] = int(sid)
+
+                protein_filename = os.path.basename(prot_path)
+
+                self.map[protein_filename] = int(sid)
 
     def __getitem__(self, item):
-        return self.map[item]
+        return self.map[os.path.basename(item)]
 
 
 def orthofinder_paths(label, subdir = "Phylogenetic_Hierarchical_Orthogroups"):
